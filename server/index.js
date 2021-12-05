@@ -2,11 +2,19 @@ const express = require("express");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes");
 const dotenv = require("dotenv");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const { checkUser } = require("./middleware/authMiddleware");
 
 const app = express();
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
+
+const corsOptions = {
+  origin: true, //included origin as true
+  credentials: true, //included credentials as true
+};
 
 // local database connection
 mongoose
@@ -21,13 +29,16 @@ mongoose
 
 // request parsers
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-// router
-app.use(authRoutes);
+app.use(cors(corsOptions));
 
 //view engine
 //app.set('view engine', 'html')
+
+// router
+app.get("*", checkUser);
+app.use(authRoutes);
 
 // listening
 app.listen(PORT, () =>
